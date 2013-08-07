@@ -23,19 +23,19 @@ def pagerduty_url = "https://events.pagerduty.com/generic/2010-04-15/create_even
 /**
  * define the default subject line configuration
  */
-def default_subject_line='$STATUS [$PROJECT] $JOB run by $USER (#$ID)'
+def default_subject_line='${job.status} [${job.project}] ${job.name} run by ${job.user} (#${job.execid})'
 /**
  * Expands the Subject string using a predefined set of tokens
  */
 def subjectString={text,binding->
     //defines the set of tokens usable in the subject configuration property
     def tokens=[
-        '$STATUS': binding.execution.status.toUpperCase(),
-        '$PROJECT': binding.execution.project,
-        '$JOB': binding.execution.job.name,
-        '$GROUP': binding.execution.job.group,
-        '$USER': binding.execution.user,
-        '$ID': binding.execution.id.toString()
+        '${job.status}': binding.execution.status.toUpperCase(),
+        '${job.project}': binding.execution.project,
+        '${job.name}': binding.execution.job.name,
+        '${job.group}': binding.execution.job.group,
+        '${job.user}': binding.execution.user,
+        '${job.execid}': binding.execution.id.toString()
     ]
     text.replaceAll(/(\$\w+)/){
         if(tokens[it[1]]){
@@ -50,8 +50,10 @@ rundeckPlugin(NotificationPlugin){
     title="PagerDuty Trigger"
     description="Create a Trigger event."
     configuration{
-        subject title:"Subject", description:"Incident subject line",defaultValue:default_subject_line,required:true
-        service_key title:"Service API Key", description:"The service key", required:true
+        subject title:"Subject", description:"Incident subject line. Can contain \${job.status}, \${job.project}, \${job.name}, \${job.group}, \${job.user}, \${job.execid}", defaultValue:default_subject_line,required:true
+
+        service_key title:"Service API Key", description:"The service key",
+                required:true
     }
     onstart { Map executionData,Map config ->
         true
