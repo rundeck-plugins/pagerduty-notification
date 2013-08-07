@@ -23,7 +23,7 @@ def pagerduty_url = "https://events.pagerduty.com/generic/2010-04-15/create_even
 /**
  * define the default subject line configuration
  */
-def defaultSubjectLine='$STATUS [$PROJECT] $JOB run by $USER (#$ID)'
+def default_subject_line='$STATUS [$PROJECT] $JOB run by $USER (#$ID)'
 /**
  * Expands the Subject string using a predefined set of tokens
  */
@@ -31,11 +31,9 @@ def subjectString={text,binding->
     //defines the set of tokens usable in the subject configuration property
     def tokens=[
         '$STATUS': binding.execution.status.toUpperCase(),
-        '$status': binding.execution.status.toLowerCase(),
         '$PROJECT': binding.execution.project,
         '$JOB': binding.execution.job.name,
         '$GROUP': binding.execution.job.group,
-        '$JOB_FULL': (binding.execution.job.group?binding.execution.job.group+'/':'')+binding.execution.job.name,
         '$USER': binding.execution.user,
         '$ID': binding.execution.id.toString()
     ]
@@ -52,7 +50,7 @@ rundeckPlugin(NotificationPlugin){
     title="PagerDuty Trigger"
     description="Create a Trigger event."
     configuration{
-        subject title:"Subject", description:"Incident subject line",defaultValue:defaultSubjectLine,required:true
+        subject title:"Subject", description:"Incident subject line",defaultValue:default_subject_line,required:true
         service_key title:"Service API Key", description:"The service key", required:true
     }
     onstart { Map executionData,Map config ->
@@ -86,14 +84,15 @@ rundeckPlugin(NotificationPlugin){
         writer.close()
         connection.connect()
 
+        // process the response.
         def response = connection.content.text
         System.err.println(response)
-
         JsonNode jsnode= json.readTree(response)
         def status = jsnode.get("status").asText()
         if (! "success".equals(status)) {
             System.err.println("ERROR: PagerDutyNotification plugin status: " + status)
         }
+        // return success.
         true
     }
     onsuccess {
