@@ -23,7 +23,8 @@ def pagerduty_url = "https://events.pagerduty.com/generic/2010-04-15/create_even
 /**
  * define the default subject line configuration
  */
-def default_subject_line='${job.status} [${job.project}] ${job.name} run by ${job.user} (#${job.execid})'
+def default_subject_line='${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid})'
+
 /**
  * Expands the Subject string using a predefined set of tokens
  */
@@ -31,34 +32,35 @@ def subjectString={text,binding->
     //defines the set of tokens usable in the subject configuration property
     def tokens=[
         '${job.status}': binding.execution.status.toUpperCase(),
-        '${job.project}': binding.execution.project,
+        '${job.project}': binding.execution.job.project,
         '${job.name}': binding.execution.job.name,
         '${job.group}': binding.execution.job.group,
         '${job.user}': binding.execution.user,
         '${job.execid}': binding.execution.id.toString()
     ]
-    text.replaceAll(/(\$\w+)/){
+    text.replaceAll(/(\$\{\S+?\})/){
         if(tokens[it[1]]){
             tokens[it[1]]
-        }else{
+        } else {
             it[0]
         }
     }
 }
 
 rundeckPlugin(NotificationPlugin){
-    title="PagerDuty Trigger"
+    title="PagerDuty"
     description="Create a Trigger event."
     configuration{
         subject title:"Subject", description:"Incident subject line. Can contain \${job.status}, \${job.project}, \${job.name}, \${job.group}, \${job.user}, \${job.execid}", defaultValue:default_subject_line,required:true
 
-        service_key title:"Service API Key", description:"The service key",
-                required:true
+        service_key title:"Service API Key", description:"The service key", scope:"Project"
     }
-    onstart { Map executionData,Map config ->
+    onstart { Map executionData,Map configuration ->
         true
     }
     onfailure { Map executionData, Map configuration ->
+
+        System.err.println("DEBUG: service_key="+configuration.service_key)
         def expandedSubject = subjectString(configuration.subject, [execution:executionData])
         def job_data = [
                 event_type: 'trigger',
@@ -88,7 +90,7 @@ rundeckPlugin(NotificationPlugin){
 
         // process the response.
         def response = connection.content.text
-        System.err.println(response)
+        System.err.println("DEBUG: response: "+response)
         JsonNode jsnode= json.readTree(response)
         def status = jsnode.get("status").asText()
         if (! "success".equals(status)) {
