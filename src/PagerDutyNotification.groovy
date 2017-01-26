@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 
 class DEFAULTS {
     static String PAGERDUTY_URL = "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
-    static String SUBJECT_LINE='${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid})'
+    static String SUBJECT_LINE='${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid}) [${job.href}]'
 }
 
 /**
@@ -34,6 +34,7 @@ def subjectString(text,binding) {
         '${job.name}': binding.execution.job.name,
         '${job.group}': binding.execution.job.group,
         '${job.user}': binding.execution.user,
+        '${job.href}': binding.execution.href,
         '${job.execid}': binding.execution.id.toString()
     ]
     text.replaceAll(/(\$\{\S+?\})/){
