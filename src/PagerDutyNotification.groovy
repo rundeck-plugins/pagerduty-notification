@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 // See http://rundeck.org/docs/developer/notification-plugin-development.html
 
 // curl -H "Content-type: application/json" -X POST \
-//    -d '{    
+//    -d '{
 //      "service_key": "ee59049e89dd45f28ce35467a08577cb",
 //      "event_type": "trigger",
 //      "description": "FAILURE for production/HTTP on machine srv01.acme.com",
@@ -66,6 +66,13 @@ def triggerEvent(Map executionData, Map configuration) {
                     status: executionData.status,
             ]
     ]
+    if (configuration.proxy_host != null && configuration.proxy_port != null) {
+        System.err.println("DEBUG: proxy_host="+configuration.proxy_host)
+        System.err.println("DEBUG: proxy_port="+configuration.proxy_port)
+        System.getProperties().put("proxySet", "true")
+        System.getProperties().put("proxyHost", configuration.proxy_host)
+        System.getProperties().put("proxyPort", configuration.proxy_port)
+    }
 
     // Send the request.
     def url = new URL(DEFAULTS.PAGERDUTY_URL)
@@ -98,6 +105,10 @@ rundeckPlugin(NotificationPlugin){
         subject title:"Subject", description:"Incident subject line. Can contain \${job.status}, \${job.project}, \${job.name}, \${job.group}, \${job.user}, \${job.execid}", defaultValue:DEFAULTS.SUBJECT_LINE,required:true
 
         service_key title:"Service API Key", description:"The service key", scope:"Project"
+
+        proxy_host title:"Proxy host", description:"Outbound proxy", scope:"Project", defaultValue:null, required:false
+
+        proxy_port title:"Proxy port", description:"Outbound proxy port", scope:"Project", defaultValue:null, required:false
     }
     onstart { Map executionData,Map configuration ->
         triggerEvent(executionData, configuration)
