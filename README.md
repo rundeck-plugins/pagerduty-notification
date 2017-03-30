@@ -25,7 +25,7 @@ and start using it!
 
 ## Configuration
 
-The plugin requires one configuration entry.
+The plugin only requires the 'service_key' configuration entry. There are two optional configurations if you send requests through an egress proxy.
 
 * service_key: This is the API Key to your service.
 
@@ -38,3 +38,11 @@ Or configure it at the instance level: $RDECK_BASE/etc/framework.properties
 
     framework.plugin.Notification.PagerDutyNotification.service_key=xx123049e89dd45f28ce35467a08577yz
 
+* proxy_host (optional): Your egress proxy host.
+* proxy_port: Required if proxy_host is set. The port the network egress proxy accepts traffic on.
+
+These can be configured at the project level. 
+Most likely this needs to be configured at the instance level: $RDECK_BASE/etc/framework.properties
+
+    framework.plugin.Notification.PagerDutyNotification.proxy_host=foo.example.net
+    framework.plugin.Notification.PagerDutyNotification.proxy_port=3128
