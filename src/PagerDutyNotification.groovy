@@ -119,7 +119,7 @@ rundeckPlugin(NotificationPlugin){
         // return success.
         true
     }
-    onsuccess {
+    onsuccess { Map executionData, Map configuration ->
         triggerEvent(executionData, configuration)
         true
     }
