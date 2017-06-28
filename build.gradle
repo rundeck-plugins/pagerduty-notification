@@ -1,0 +1,61 @@
+group 'com.rundeck.plugin'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+configurations{
+    //declare custom pluginLibs configuration to include only libs for this plugin
+    pluginLibs
+
+    //declare compile to extend from pluginLibs so it inherits the dependencies
+    compile{
+        extendsFrom pluginLibs
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    compile(group:'org.rundeck', name: 'rundeck-core', version: '2.8.2')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    pluginLibs 'com.squareup.retrofit2:retrofit:2.3.0'
+    pluginLibs group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.2.0'
+
+
+}
+
+
+
+
+// task to copy plugin libs to output/lib dir
+task copyToLib(type: Copy) {
+    into "$buildDir/output/lib"
+    from configurations.pluginLibs
+}
+
+jar {
+    //include contents of output dir
+    from "$buildDir/output"
+    manifest {
+        attributes 'Rundeck-Plugin-Version': '1.2', 'Rundeck-Plugin-Archive': 'true','Rundeck-Plugin-File-Version': "${project.version}"
+        //create space-separated list of pluginLibs
+        def libList = configurations.pluginLibs.collect{'lib/'+it.name}.join(' ')
+        attributes 'Rundeck-Plugin-Classnames': 'com.rundeck.plugins.PagerDutyNotificationPlugin', 'Rundeck-Plugin-Libs': "${libList}"
+    }
+}
+
+//set jar task to depend on copyToLib
+jar.dependsOn(copyToLib)
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}
