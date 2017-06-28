@@ -1,10 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/groups/public"}
+    }
+}
+
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.5.0'
+}
+
+
 group 'com.rundeck.plugin'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'groovy'
 apply plugin: 'java'
+apply plugin: 'pl.allegro.tech.build.axion-release'
 
 sourceCompatibility = 1.8
+
+scmVersion {
+    ignoreUncommittedChanges = true
+    tag {
+        prefix = ''
+        versionSeparator = ''
+        def origDeserialize=deserialize
+        //apend .0 to satisfy semver if the tag version is only X.Y
+        deserialize = { config, position, tagName ->
+            def orig = origDeserialize(config, position, tagName)
+            if (orig.split('\\.').length < 3) {
+                orig += ".0"
+            }
+            orig
+        }
+    }
+}
+
+project.version = scmVersion.version
+
 
 configurations{
     //declare custom pluginLibs configuration to include only libs for this plugin

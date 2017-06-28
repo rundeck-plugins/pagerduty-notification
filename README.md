@@ -17,9 +17,13 @@ Context variables usable in the subject line:
 
 ## Installation
 
-Copy the groovy script to the plugins directory:
+Generate jar file using:
 
-    cp src/PagerDutyNotification.groovy to $RDECK_BASE/libext
+    ./gradlew build
+
+Copy the jar file to the plugins directory:
+
+    cp build/libs/pagerduty-notification-X.Y.Z.jar  to $RDECK_BASE/libext
 
 and start using it!
 

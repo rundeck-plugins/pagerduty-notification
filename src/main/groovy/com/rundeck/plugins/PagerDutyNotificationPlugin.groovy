@@ -97,10 +97,17 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
 
         Response<PagerResponse> response = apiService.sendEvent(job_data).execute()
 
-        println("DEBUG: response: "+response)
-        println "Status:" + response.body().status
-        println "message:" + response.body().message
-        println "errors:" + response.body().errors
+
+        if(response.errorBody()!=null){
+            println "Error body:" + response.errorBody().string()
+        }else{
+            println("DEBUG: response: "+response)
+        }
+        //println "Status:" + response.body().status
+        //println "message:" + response.body().message
+        //println "errors:" + response.body().errors
+
+
 
     }
 
