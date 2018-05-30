@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    id 'pl.allegro.tech.build.axion-release' version '1.5.0'
+    id 'pl.allegro.tech.build.axion-release' version '1.7.1'
 }
 
 
