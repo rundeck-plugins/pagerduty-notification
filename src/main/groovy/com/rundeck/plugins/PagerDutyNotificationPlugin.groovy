@@ -3,7 +3,8 @@ package com.rundeck.plugins
 import com.dtolabs.rundeck.core.plugins.Plugin
 import com.dtolabs.rundeck.core.plugins.configuration.PropertyScope;
 import com.dtolabs.rundeck.plugins.descriptions.PluginDescription
-import com.dtolabs.rundeck.plugins.descriptions.PluginProperty;
+import com.dtolabs.rundeck.plugins.descriptions.PluginProperty
+import com.dtolabs.rundeck.plugins.descriptions.SelectValues;
 import com.dtolabs.rundeck.plugins.notification.NotificationPlugin
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -24,12 +25,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class PagerDutyNotificationPlugin implements NotificationPlugin {
 
     final static String PAGERDUTY_URL = "https://events.pagerduty.com"
-    final static String SUBJECT_LINE='${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid}) [${job.href}]'
+    final static String SUBJECT_LINE='${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid}) [ ${job.href} ]'
 
-    @PluginProperty(title = "subject", description = "Incident subject line", required = true, defaultValue=PagerDutyNotificationPlugin.SUBJECT_LINE)
+    @PluginProperty(title = "subject", description = "Incident subject line", required = false, defaultValue=PagerDutyNotificationPlugin.SUBJECT_LINE)
     private String subject;
 
-    @PluginProperty(title = "Service API Key", description = "Service API Key", required = true, scope=PropertyScope.Project)
+    @PluginProperty(title = "version", description = "API version: v1 or v2", required = true, defaultValue="v1", scope=PropertyScope.Project)
+    private String version;
+
+    @PluginProperty(title = "Service API/Integration Key", description = "Service API Key or Integration Key (v2)", required = true, scope=PropertyScope.Project)
     private String service_key;
 
     @PluginProperty(title = "Proxy host", description = "Outbound prox", required = false, scope=PropertyScope.Project)
@@ -39,24 +43,9 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
     private String proxy_port;
 
 
-
-    // See http://rundeck.org/docs/developer/notification-plugin-development.html
-
-    // curl -H "Content-type: application/json" -X POST \
-    //    -d '{
-    //      "service_key": "ee59049e89dd45f28ce35467a08577cb",
-    //      "event_type": "trigger",
-    //      "description": "FAILURE for production/HTTP on machine srv01.acme.com",
-    //      "details": {
-    //        "ping time": "1500ms",
-    //        "load avg": 0.75
-    //      }
-    //    }' \
-    //    "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
-
     @Override
     public boolean postNotification(String trigger, Map executionData, Map config) {
-        triggerEvent(executionData, config)
+        triggerEvent(trigger, executionData, config)
         true
     }
 
@@ -65,21 +54,7 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
      * @param executionData
      * @param configuration
      */
-    def triggerEvent(Map executionData, Map configuration) {
-        System.err.println("DEBUG: service_key="+service_key)
-        def expandedSubject = subjectString(subject, [execution:executionData])
-        def job_data = [
-                event_type: 'trigger',
-                service_key: service_key,
-                description: expandedSubject,
-                details:[job: executionData.job.name,
-                         group: executionData.job.group,
-                         description: executionData.job.description,
-                         project: executionData.job.project,
-                         user: executionData.user,
-                         status: executionData.status,
-                ]
-        ]
+    def triggerEvent(String trigger, Map executionData, Map configuration) {
         if (proxy_host != null && proxy_port != null) {
             System.err.println("DEBUG: proxy_host="+proxy_host)
             System.err.println("DEBUG: proxy_port="+proxy_port)
@@ -95,26 +70,18 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
 
         PagerDutyApi apiService = retrofit.create(PagerDutyApi.class)
 
-        Response<PagerResponse> response = apiService.sendEvent(job_data).execute()
+        if(version=="v1"){
+            apiV1(trigger,apiService, executionData)
 
-
-        if(response.errorBody()!=null){
-            println "Error body:" + response.errorBody().string()
         }else{
-            println("DEBUG: response: "+response)
+            apiV2(trigger,apiService, executionData)
         }
-        //println "Status:" + response.body().status
-        //println "message:" + response.body().message
-        //println "errors:" + response.body().errors
-
-
-
     }
 
 
-/**
- * Expands the Subject string using a predefined set of tokens
- */
+    /**
+     * Expands the Subject string using a predefined set of tokens
+     */
     def subjectString(text,binding) {
         //defines the set of tokens usable in the subject configuration property
         def tokens=[
@@ -136,4 +103,83 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
     }
 
 
+    def apiV1(String trigger,PagerDutyApi apiService, Map executionData){
+        def expandedSubject = subjectString(subject.empty==false?subject:SUBJECT_LINE, [execution:executionData])
+        def job_data = [
+                event_type: 'trigger',
+                service_key: service_key,
+                description: expandedSubject,
+                details:[
+                        job: executionData.job.name,
+                        group: executionData.job.group,
+                        description: executionData.job.description,
+                        project: executionData.job.project,
+                        user: executionData.user,
+                        status: executionData.status,
+                        link: executionData.href,
+                        trigger: trigger
+                ]
+        ]
+
+        Response<PagerResponse> response = apiService.sendEvent(job_data).execute()
+        if(response.errorBody()!=null){
+            println "Error body:" + response.errorBody().string()
+        }else{
+            println("DEBUG: response: "+response)
+        }
+    }
+
+
+    def apiV2(String trigger,PagerDutyApi apiService, Map executionData){
+        def expandedSubject = subjectString(subject, [execution:executionData])
+
+        def severity
+        if (trigger=="start" || trigger=="success"){
+            severity="info"
+        }else if(trigger=="failure" ){
+            severity="error"
+        }else{
+            severity="warning"
+        }
+
+        def date
+        if (trigger=="start" || trigger=="avgduration"){
+            date = executionData.dateStartedW3c
+        }else{
+            date = executionData.dateEndedW3c
+        }
+
+        def job_data = [
+            event_action: 'trigger',
+            routing_key: service_key,
+            dedup_key: executionData.id+"-"+trigger,
+            payload: [
+                    summary: expandedSubject,
+                    source: "Project " + executionData.project,
+                    severity: severity,
+                    timestamp: date,
+                    group: executionData.job.name,
+                    custom_details:[job: executionData.job.name,
+                             group: executionData.job.group,
+                             description: executionData.job.description,
+                             project: executionData.job.project,
+                             user: executionData.user,
+                             status: executionData.status,
+                             trigger: trigger
+                    ]
+            ],
+            links:[
+                    [href: executionData.href, text: "Execution Link"],
+                    [href: executionData.job.href, text: "Job Link"],
+            ]
+
+        ]
+
+        Response<PagerResponse> response = apiService.sendEventV2(job_data).execute()
+        if(response.errorBody()!=null){
+            println "Error body:" + response.errorBody().string()
+        }else{
+            println("DEBUG: response: "+response)
+        }
+    }
 }
