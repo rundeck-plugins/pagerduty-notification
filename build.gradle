@@ -79,6 +79,13 @@ jar {
     //include contents of output dir
     from "$buildDir/output"
     manifest {
+        attributes 'Rundeck-Plugin-Name' : 'PagerDuty Notification'
+        attributes 'Rundeck-Plugin-Description' : 'Sends trigger events to your PagerDuty service'
+        attributes 'Rundeck-Plugin-Rundeck-Compatibility-Version': '2.8.2+'
+        attributes 'Rundeck-Plugin-Tags': 'java,notification,pagerduty'
+        attributes 'Rundeck-Plugin-License': 'Apache 2.0'
+        attributes 'Rundeck-Plugin-Source-Link': 'https://github.com/rundeck-plugins/pagerduty-notification'
+        attributes 'Rundeck-Plugin-Target-Host-Compatibility': 'all'
         attributes 'Rundeck-Plugin-Version': '1.2', 'Rundeck-Plugin-Archive': 'true','Rundeck-Plugin-File-Version': "${project.version}"
         //create space-separated list of pluginLibs
         def libList = configurations.pluginLibs.collect{'lib/'+it.name}.join(' ')
