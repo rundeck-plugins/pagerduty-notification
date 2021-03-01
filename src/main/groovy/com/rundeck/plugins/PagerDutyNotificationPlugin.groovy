@@ -21,19 +21,21 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by luistoledo on 6/28/17.
  */
 @Plugin(service="Notification", name="PagerDutyNotification")
-@PluginDescription(title="PagerDuty", description="Create a Trigger event.")
+@PluginDescription(title="PagerDuty", description="")
 public class PagerDutyNotificationPlugin implements NotificationPlugin {
 
     final static String PAGERDUTY_URL = "https://events.pagerduty.com"
-    final static String SUBJECT_LINE='${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid}) [ ${job.href} ]'
+    final static String SUBJECT_LINE = '${job.status} [${job.project}] \"${job.name}\" run by ${job.user} (#${job.execid}) [ ${job.href} ]'
+    final static String PD_API_VER = "v2"
+    final static String PD_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-    @PluginProperty(title = "subject", description = "Incident subject line", required = false, defaultValue=PagerDutyNotificationPlugin.SUBJECT_LINE)
+    @PluginProperty(title = "Subject", description = "Incident subject line", required = false, defaultValue=PagerDutyNotificationPlugin.SUBJECT_LINE)
     private String subject;
 
-    @PluginProperty(title = "version", description = "API version: v1 or v2", required = true, defaultValue="v1", scope=PropertyScope.Project)
+    @PluginProperty(title = "API Version", description = "PagerDuty API Version: v1 or v2", required = true, defaultValue=PagerDutyNotificationPlugin.PD_API_VER)
     private String version;
 
-    @PluginProperty(title = "Service API/Integration Key", description = "Service API Key or Integration Key (v2)", required = true, scope=PropertyScope.Project)
+    @PluginProperty(title = "Integration Key", description = "PagerDuty Service Integration Key", required = true, defaultValue=PagerDutyNotificationPlugin.PD_KEY)
     private String service_key;
 
     @PluginProperty(title = "Proxy host", description = "Outbound prox", required = false, scope=PropertyScope.Project)
