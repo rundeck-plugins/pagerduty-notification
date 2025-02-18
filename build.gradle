@@ -38,7 +38,6 @@ scmVersion {
 
 project.version = scmVersion.version
 
-
 configurations{
     //declare custom pluginLibs configuration to include only libs for this plugin
     pluginLibs
@@ -67,10 +66,15 @@ dependencies {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
 
+    constraints {
+        // Pins the version to avoid  a dependency on okhttp 3.14.9 that suffers from the CVE.
+        // This version of okhttp is inline with the one used in Rundeck 5.9.x
+        pluginLibs('com.squareup.okhttp3:okhttp:4.12.0') {
+            because "CVE-2023-3635"
+        }
+    }
+
 }
-
-
-
 
 // task to copy plugin libs to output/lib dir
 task copyToLib(type: Copy) {
