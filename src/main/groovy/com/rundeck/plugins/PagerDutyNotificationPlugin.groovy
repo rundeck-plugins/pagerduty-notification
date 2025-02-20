@@ -21,7 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by luistoledo on 6/28/17.
  */
 @Plugin(service="Notification", name="PagerDutyNotification")
-@PluginDescription(title="PagerDuty Notification via the Events API", description="Legacy PagerDuty Notification Plugin")
+@PluginDescription(title="PagerDuty Notification", description="Legacy PagerDuty Notification via Events API Plugin")
 public class PagerDutyNotificationPlugin implements NotificationPlugin {
 
     final static String PAGERDUTY_URL = "https://events.pagerduty.com"
