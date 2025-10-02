@@ -1,23 +1,23 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url "https://oss.sonatype.org/content/groups/public"}
+        maven { url = "https://oss.sonatype.org/content/groups/public"}
     }
 }
 
 plugins {
+    id 'groovy'
+    id 'java'
     id 'pl.allegro.tech.build.axion-release' version '1.18.17'
 }
 
+group = 'com.rundeck.plugin'
 
-group 'com.rundeck.plugin'
-version '1.0-SNAPSHOT'
-
-apply plugin: 'groovy'
-apply plugin: 'java'
-apply plugin: 'pl.allegro.tech.build.axion-release'
-
-sourceCompatibility = 11
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 scmVersion {
     ignoreUncommittedChanges = true
@@ -54,13 +54,13 @@ repositories {
 
 dependencies {
 
-    implementation 'org.codehaus.groovy:groovy-all:2.3.11'
+    implementation 'org.apache.groovy:groovy-all:4.0.22'
     implementation(group:'org.rundeck', name: 'rundeck-core', version: '5.9.0-20250205')
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
 
     pluginLibs 'com.squareup.retrofit2:retrofit:2.9.0'
 
-    pluginLibs "com.google.code.gson:gson:2.8.9"
+    pluginLibs "com.google.code.gson:gson:2.10.1"
     pluginLibs (group: 'com.squareup.retrofit2', name: 'converter-gson', version: "2.9.0") {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
