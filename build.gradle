@@ -55,7 +55,11 @@ repositories {
 dependencies {
 
     implementation 'org.apache.groovy:groovy-all:4.0.22'
-    implementation(group:'org.rundeck', name: 'rundeck-core', version: '5.9.0-20250205')
+    implementation(group:'org.rundeck', name: 'rundeck-core', version: '5.15.0-20250902') {
+        exclude group: 'commons-lang', module: 'commons-lang'
+    }
+    // Add secure replacement for excluded commons-lang
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
 
     pluginLibs 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -71,6 +75,8 @@ dependencies {
         pluginLibs('com.squareup.okhttp3:okhttp:4.12.0') {
             because "CVE-2023-3635"
         }
+        
+
     }
 
 }
@@ -87,7 +93,7 @@ jar {
     manifest {
         attributes 'Rundeck-Plugin-Name' : 'PagerDuty Notification'
         attributes 'Rundeck-Plugin-Description' : 'Sends trigger events to your PagerDuty service'
-        attributes 'Rundeck-Plugin-Rundeck-Compatibility-Version': '5.9.0+'
+        attributes 'Rundeck-Plugin-Rundeck-Compatibility-Version': '5.15.0+'
         attributes 'Rundeck-Plugin-Tags': 'java,notification,pagerduty'
         attributes 'Rundeck-Plugin-License': 'Apache 2.0'
         attributes 'Rundeck-Plugin-Source-Link': 'https://github.com/rundeck-plugins/pagerduty-notification'
