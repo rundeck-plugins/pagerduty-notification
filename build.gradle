@@ -20,7 +20,7 @@ java {
 }
 
 // Override version for Grails 7 upgrade
-project.version = '1.3.4-grails7-upgrade-test'
+project.version = '1.3.5-grails7-upgrade-test'
 
 configurations{
     //declare custom pluginLibs configuration to include only libs for this plugin
