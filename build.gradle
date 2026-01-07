@@ -20,7 +20,7 @@ java {
 }
 
 // Override version for Grails 7 upgrade
-project.version = '1.3.5-grails7-upgrade-test'
+project.version = '1.3.6-grails7-upgrade-test'
 
 configurations{
     //declare custom pluginLibs configuration to include only libs for this plugin
@@ -61,7 +61,7 @@ dependencies {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
     // Add secure replacement for excluded commons-lang
-    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
 
     pluginLibs 'com.squareup.retrofit2:retrofit:2.9.0'
