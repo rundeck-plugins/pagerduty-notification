@@ -9,9 +9,19 @@ plugins {
     id 'groovy'
     id 'java'
     id 'pl.allegro.tech.build.axion-release' version '1.18.17'
+    id 'maven-publish'
 }
 
-group = 'com.github.rundeck-plugins'
+group = 'com.rundeck.plugins'
+
+scmVersion {
+    ignoreUncommittedChanges = false
+    tag {
+        prefix = ''           // NO "v" prefix - see PLUGIN_TAGGING_ARCHITECTURE.md
+        versionSeparator = ''
+    }
+    versionCreator 'simple'  // Use simple version creator (just tag name)
+}
 
 java {
     toolchain {
@@ -19,8 +29,7 @@ java {
     }
 }
 
-// Override version for Grails 7 upgrade
-project.version = '1.3.6-grails7-upgrade-test'
+version = scmVersion.version  // Dynamic version from git tag
 
 configurations{
     //declare custom pluginLibs configuration to include only libs for this plugin
@@ -121,14 +130,27 @@ test {
     ]
 }
 
-apply plugin: 'maven-publish'
-
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'com.github.rundeck-plugins'
+            groupId = 'com.rundeck.plugins'
             artifactId = 'pagerduty-notification'
+            version = project.version
             from components.java
+        }
+    }
+    
+    repositories {
+        maven {
+            name = "PackageCloudTest"
+            url = uri("https://packagecloud.io/pagerduty/rundeckpro-test/maven2")
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+            credentials(HttpHeaderCredentials) {
+                name = "Authorization"
+                value = "Bearer " + (System.getenv("PKGCLD_WRITE_TOKEN") ?: project.findProperty("pkgcldWriteToken"))
+            }
         }
     }
 }
