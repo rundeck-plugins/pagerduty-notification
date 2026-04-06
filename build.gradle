@@ -9,10 +9,16 @@ plugins {
     id 'groovy'
     id 'java'
     id 'pl.allegro.tech.build.axion-release' version '1.18.17'
-    id 'maven-publish'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
-group = 'com.rundeck.plugins'
+group = 'org.rundeck.plugins'
+
+ext.publishName = "PagerDuty Notification ${project.version}"
+ext.githubSlug = 'rundeck-plugins/pagerduty-notification'
+ext.developers = [
+        [id: 'gschueler', name: 'Greg Schueler', email: 'greg@rundeck.com']
+]
 
 scmVersion {
     ignoreUncommittedChanges = false
@@ -27,6 +33,8 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 version = scmVersion.version  // Dynamic version from git tag
@@ -66,7 +74,10 @@ repositories {
 dependencies {
 
     implementation 'org.apache.groovy:groovy-all:4.0.29'
-    implementation(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-SNAPSHOT') {
+    compileOnly(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-SNAPSHOT') {
+        exclude group: 'commons-lang', module: 'commons-lang'
+    }
+    testImplementation(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-SNAPSHOT') {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
     // Add secure replacement for excluded commons-lang
@@ -130,27 +141,14 @@ test {
     ]
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'com.rundeck.plugins'
-            artifactId = 'pagerduty-notification'
-            version = project.version
-            from components.java
-        }
-    }
-    
+nexusPublishing {
+    packageGroup = 'org.rundeck.plugins'
     repositories {
-        maven {
-            name = "PackageCloudTest"
-            url = uri("https://packagecloud.io/pagerduty/rundeckpro-test/maven2")
-            authentication {
-                header(HttpHeaderAuthentication)
-            }
-            credentials(HttpHeaderCredentials) {
-                name = "Authorization"
-                value = "Bearer " + (System.getenv("PKGCLD_WRITE_TOKEN") ?: project.findProperty("pkgcldWriteToken"))
-            }
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
         }
     }
 }
+
+apply from: "${rootDir}/gradle/publishing.gradle"
