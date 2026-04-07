@@ -74,10 +74,10 @@ repositories {
 dependencies {
 
     implementation 'org.apache.groovy:groovy-all:4.0.29'
-    compileOnly(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-SNAPSHOT') {
+    compileOnly(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-alpha1-20260407') {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
-    testImplementation(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-SNAPSHOT') {
+    testImplementation(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-alpha1-20260407') {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
     // Add secure replacement for excluded commons-lang
