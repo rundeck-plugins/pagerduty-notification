@@ -8,7 +8,7 @@ buildscript {
 plugins {
     id 'groovy'
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.18.17'
+    id 'pl.allegro.tech.build.axion-release' version '1.21.2'
     id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
@@ -74,10 +74,10 @@ repositories {
 dependencies {
 
     implementation 'org.apache.groovy:groovy-all:4.0.29'
-    compileOnly(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-alpha1-20260407') {
+    compileOnly(group:'org.rundeck', name: 'rundeck-core', version: '6.1.0-SNAPSHOT') {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
-    testImplementation(group:'org.rundeck', name: 'rundeck-core', version: '6.0.0-alpha1-20260407') {
+    testImplementation(group:'org.rundeck', name: 'rundeck-core', version: '6.1.0-SNAPSHOT') {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
     // Add secure replacement for excluded commons-lang
