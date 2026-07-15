@@ -94,7 +94,7 @@ dependencies {
     constraints {
         // Pins the version to avoid  a dependency on okhttp 3.14.9 that suffers from the CVE.
         // This version of okhttp is inline with the one used in Rundeck 5.9.x
-        pluginLibs('com.squareup.okhttp3:okhttp:4.12.0') {
+        pluginLibs('com.squareup.okhttp3:okhttp:5.4.0') {
             because "CVE-2023-3635"
         }
         
