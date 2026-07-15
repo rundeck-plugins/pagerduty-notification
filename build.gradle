@@ -86,7 +86,7 @@ dependencies {
 
     pluginLibs 'com.squareup.retrofit2:retrofit:2.9.0'
 
-    pluginLibs "com.google.code.gson:gson:2.10.1"
+    pluginLibs "com.google.code.gson:gson:2.14.0"
     pluginLibs (group: 'com.squareup.retrofit2', name: 'converter-gson', version: "2.9.0") {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
