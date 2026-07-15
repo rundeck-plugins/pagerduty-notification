@@ -73,7 +73,7 @@ repositories {
 
 dependencies {
 
-    implementation 'org.apache.groovy:groovy-all:4.0.29'
+    implementation 'org.apache.groovy:groovy-all:4.0.32'
     compileOnly(group:'org.rundeck', name: 'rundeck-core', version: '6.1.0-SNAPSHOT') {
         exclude group: 'commons-lang', module: 'commons-lang'
     }
